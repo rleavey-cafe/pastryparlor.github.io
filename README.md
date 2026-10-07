@@ -1,2 +1,938 @@
-# pastryparlor.github.io
-Online Ordering for Pastry Parlor
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Pastry Parlor - Online Menu & Kitchen Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Playfair Display for headers, Inter for clean readable text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        parlor: {
+                            dark: '#2A1A14',      // Deep rich espresso brown
+                            brown: '#4A2E2B',     // Warm roasted coffee brown
+                            accent: '#C86D51',    // Terracotta / warm pastry accent
+                            gold: '#D4A359',      // Honey gold highlight
+                            cream: '#FAF6F0',     // Light cream background
+                            card: '#FFFDF9',      // Off-white card background
+                            sage: '#5B7065'       // Soft green accent (matcha/avocado)
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FAF6F0;
+            color: #2A1A14;
+            font-family: 'Inter', sans-serif;
+        }
+        .font-serif-title {
+            font-family: 'Playfair Display', serif;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FAF6F0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #C86D51;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4A2E2B;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-parlor-cream text-parlor-dark antialiased">
+
+    <header class="bg-parlor-dark text-parlor-cream shadow-lg sticky top-0 z-40 border-b border-parlor-brown">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Branding -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('customer')">
+                    <div class="w-12 h-12 bg-parlor-brown rounded-full flex items-center justify-center border-2 border-parlor-gold text-parlor-gold shadow-md">
+                        <i class="fa-solid fa-paw text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-serif-title text-2xl sm:text-3xl font-bold tracking-wide text-parlor-cream leading-tight">
+                            The Pastry Parlor
+                        </h1>
+                        <p class="text-xs text-parlor-gold font-medium tracking-widest uppercase">est. 2021</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="flex space-x-2 sm:space-x-4">
+                    <button id="nav-customer-btn" onclick="switchTab('customer')" 
+                        class="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center space-x-2 bg-parlor-accent text-white shadow">
+                        <i class="fa-solid fa-utensils"></i>
+                        <span class="hidden sm:inline">Order Menu</span>
+                        <span class="sm:hidden">Menu</span>
+                    </button>
+                    
+                    <button id="nav-kitchen-btn" onclick="switchTab('kitchen')" 
+                        class="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center space-x-2 bg-parlor-brown text-parlor-cream hover:bg-parlor-accent relative">
+                        <i class="fa-solid fa-clipboard-list"></i>
+                        <span class="hidden sm:inline">Kitchen Dashboard</span>
+                        <span class="sm:hidden">Kitchen</span>
+                        <span id="pending-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow">0</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <div id="customer-view" class="space-y-8">
+            <!-- Hero Announcement Banner -->
+            <div class="bg-parlor-brown text-parlor-cream rounded-2xl p-6 sm:p-8 shadow-md relative overflow-hidden border border-parlor-gold/30">
+                <div class="absolute -right-6 -bottom-6 opacity-10 text-parlor-gold">
+                    <i class="fa-solid fa-paw text-9xl"></i>
+                </div>
+                <div class="relative z-10 max-w-2xl">
+                    <span class="inline-block px-3 py-1 bg-parlor-gold text-parlor-dark text-xs font-bold rounded-full uppercase tracking-wider mb-3">
+                        Fresh Daily in School
+                    </span>
+                    <h2 class="font-serif-title text-3xl sm:text-4xl font-bold mb-2">Welcome to The Pastry Parlor!</h2>
+                    <p class="text-parlor-cream/80 text-sm sm:text-base leading-relaxed">
+                        Place your order online for delivery straight to your classroom. Select your items below, specify your period, and our team will handle the rest!
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left 2 Columns: Interactive Menu -->
+                <div class="lg:col-span-2 space-y-8">
+
+                    <!-- Section 1: Drinks -->
+                    <section>
+                        <div class="flex items-center space-x-3 mb-4 border-b-2 border-parlor-gold/40 pb-2">
+                            <i class="fa-solid fa-mug-hot text-xl text-parlor-accent"></i>
+                            <h3 class="font-serif-title text-2xl font-bold text-parlor-dark">Drinks</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="drinks-container">
+                            <!-- Populated dynamically via JavaScript -->
+                        </div>
+                    </section>
+
+                    <!-- Section 2: Breakfast Specials -->
+                    <section>
+                        <div class="flex items-center space-x-3 mb-4 border-b-2 border-parlor-gold/40 pb-2">
+                            <i class="fa-solid fa-bread-slice text-xl text-parlor-accent"></i>
+                            <h3 class="font-serif-title text-2xl font-bold text-parlor-dark">Breakfast Specials</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="specials-container">
+                            <!-- Populated dynamically via JavaScript -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Right 1 Column: Cart & Customer Info Form -->
+                <div class="lg:col-span-1">
+                    <div class="bg-parlor-card rounded-2xl p-6 shadow-lg border border-parlor-gold/30 sticky top-28">
+                        <div class="flex items-center justify-between pb-4 border-b border-gray-200 mb-4">
+                            <h3 class="font-serif-title text-xl font-bold text-parlor-dark flex items-center gap-2">
+                                <i class="fa-solid fa-shopping-bag text-parlor-accent"></i> Your Order
+                            </h3>
+                            <button onclick="clearCart()" class="text-xs text-red-500 hover:text-red-700 font-medium underline">
+                                Clear Cart
+                            </button>
+                        </div>
+
+                        <!-- Cart Items List -->
+                        <div id="cart-items" class="space-y-3 max-h-60 overflow-y-auto pr-1 mb-4">
+                            <!-- Dynamic Cart Items -->
+                        </div>
+
+                        <!-- Total display -->
+                        <div class="border-t border-gray-200 pt-3 mb-6">
+                            <div class="flex justify-between items-center text-lg font-bold text-parlor-dark">
+                                <span>Total Amount:</span>
+                                <span id="cart-total" class="text-parlor-accent">$0.00</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Payment is collected in-person upon fulfillment.</p>
+                        </div>
+
+                        <!-- Customer Details Form -->
+                        <form id="order-form" onsubmit="handleOrderSubmit(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-parlor-dark/80 mb-1">
+                                    Customer Name *
+                                </label>
+                                <input type="text" id="cust-name" required placeholder="e.g. Alex Johnson" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-parlor-accent focus:border-parlor-accent outline-none text-sm transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-parlor-dark/80 mb-1">
+                                    Room Number *
+                                </label>
+                                <input type="text" id="cust-room" required placeholder="e.g. Room 204" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-parlor-accent focus:border-parlor-accent outline-none text-sm transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-parlor-dark/80 mb-1">
+                                    Time Requested *
+                                </label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="flex items-center justify-center p-2.5 border border-gray-300 rounded-xl cursor-pointer hover:bg-parlor-cream transition text-sm font-medium has-[:checked]:bg-parlor-accent has-[:checked]:text-white has-[:checked]:border-parlor-accent">
+                                        <input type="radio" name="cust-period" value="1st Period" required class="sr-only">
+                                        <span>1st Period</span>
+                                    </label>
+                                    <label class="flex items-center justify-center p-2.5 border border-gray-300 rounded-xl cursor-pointer hover:bg-parlor-cream transition text-sm font-medium has-[:checked]:bg-parlor-accent has-[:checked]:text-white has-[:checked]:border-parlor-accent">
+                                        <input type="radio" name="cust-period" value="2nd Period" required class="sr-only">
+                                        <span>2nd Period</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" 
+                                class="w-full py-3 bg-parlor-accent hover:bg-parlor-brown text-white font-bold rounded-xl shadow-md transition duration-200 flex items-center justify-center space-x-2 text-base">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>Submit Order to Cafe</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="kitchen-view" class="hidden space-y-6">
+            <!-- Dashboard Header & Controls -->
+            <div class="bg-parlor-card rounded-2xl p-6 shadow-md border border-parlor-gold/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="font-serif-title text-2xl sm:text-3xl font-bold text-parlor-dark flex items-center gap-3">
+                        <i class="fa-solid fa-utensils text-parlor-accent"></i>
+                        Kitchen Fulfillment Dashboard
+                    </h2>
+                    <p class="text-xs sm:text-sm text-gray-600">Manage real-time incoming orders for room deliveries</p>
+                </div>
+
+                <!-- Filters & Actions -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <div>
+                        <select id="filter-period" onchange="renderKitchenOrders()" 
+                            class="px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-parlor-accent outline-none">
+                            <option value="ALL">All Periods</option>
+                            <option value="1st Period">1st Period Only</option>
+                            <option value="2nd Period">2nd Period Only</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <select id="filter-status" onchange="renderKitchenOrders()" 
+                            class="px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-parlor-accent outline-none">
+                            <option value="ALL">All Statuses</option>
+                            <option value="Pending">Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Fulfilled">Fulfilled</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+
+                    <button onclick="clearCompletedOrders()" 
+                        class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium rounded-xl transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                        <span>Clear Fulfilled</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Orders Grid -->
+            <div id="kitchen-orders-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically populated kitchen order cards -->
+            </div>
+        </div>
+
+    </main>
+
+    <div id="item-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-parlor-card rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-parlor-gold/40 transform transition-all">
+            <!-- Modal Header -->
+            <div class="bg-parlor-dark text-parlor-cream p-5 flex justify-between items-start">
+                <div>
+                    <h3 id="modal-item-name" class="font-serif-title text-2xl font-bold">Item Name</h3>
+                    <p id="modal-item-price" class="text-parlor-gold font-semibold text-lg">$0.00</p>
+                </div>
+                <button onclick="closeModal()" class="text-parlor-cream/70 hover:text-white text-2xl font-bold">
+                    &times;
+                </button>
+            </div>
+
+            <!-- Modal Content & Options -->
+            <div id="modal-options-body" class="p-6 space-y-5 max-h-[60vh] overflow-y-auto text-sm">
+                <!-- Dynamic form fields based on item customization rules -->
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <span class="text-xs font-bold uppercase text-gray-500">Qty:</span>
+                    <button onclick="adjustModalQty(-1)" class="w-8 h-8 rounded-lg bg-gray-200 font-bold hover:bg-gray-300">-</button>
+                    <span id="modal-qty" class="font-bold text-base w-4 text-center">1</span>
+                    <button onclick="adjustModalQty(1)" class="w-8 h-8 rounded-lg bg-gray-200 font-bold hover:bg-gray-300">+</button>
+                </div>
+
+                <button onclick="confirmAddToCart()" class="px-6 py-2.5 bg-parlor-accent hover:bg-parlor-brown text-white font-bold rounded-xl shadow transition">
+                    Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="success-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-parlor-card rounded-2xl max-w-md w-full p-6 text-center shadow-2xl border border-parlor-gold/40">
+            <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 class="font-serif-title text-2xl font-bold text-parlor-dark mb-2">Order Submitted!</h3>
+            <p class="text-sm text-gray-600 mb-6">
+                Thank you! Your order has been sent to the cafe kitchen and will be delivered during your requested period.
+            </p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeSuccessModal(); switchTab('customer')" 
+                    class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-xl text-sm transition">
+                    Place Another Order
+                </button>
+                <button onclick="closeSuccessModal(); switchTab('kitchen')" 
+                    class="px-5 py-2.5 bg-parlor-accent hover:bg-parlor-brown text-white font-semibold rounded-xl text-sm transition">
+                    View Kitchen Status
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* Strict PDF Menu Data Structure */
+        const MENU_DATA = [
+            // Drinks
+            {
+                id: 'cold-brew',
+                category: 'drinks',
+                name: 'Cold Brew',
+                price: 3.00,
+                description: 'Smooth, refreshing chilled coffee brewed fresh.',
+                customizable: true,
+                type: 'custom_drink'
+            },
+            {
+                id: 'iced-coffee',
+                category: 'drinks',
+                name: 'Iced Coffee',
+                price: 4.00,
+                description: 'Freshly brewed ice-cold coffee served over ice.',
+                customizable: true,
+                type: 'custom_drink'
+            },
+            {
+                id: 'iced-green-tea',
+                category: 'drinks',
+                name: 'Iced Green Tea',
+                price: 3.00,
+                description: 'Light and crisp chilled green tea.',
+                customizable: true,
+                type: 'custom_drink'
+            },
+            {
+                id: 'iced-matcha-latte',
+                category: 'drinks',
+                name: 'NEW Iced Matcha Latte',
+                price: 4.00,
+                description: 'Prepared fresh to order using organic matcha powder & whole milk.',
+                customizable: true,
+                type: 'matcha_latte',
+                badge: 'NEW'
+            },
+            // Breakfast Specials
+            {
+                id: 'beg-bagel',
+                category: 'specials',
+                name: 'Bacon, Egg, & Cheese Bagel',
+                price: 6.00,
+                description: 'An unmistakable New York Classic, prepped by our high school students each day.',
+                customizable: true,
+                type: 'beg_bagel'
+            },
+            {
+                id: 'avocado-toast',
+                category: 'specials',
+                name: 'Avocado Toast',
+                price: 3.00,
+                description: 'Avocado mash on sourdough with everything seasoning.',
+                customizable: true,
+                type: 'avocado_toast'
+            },
+            {
+                id: 'hand-rolled-bagel',
+                category: 'specials',
+                name: 'Hand Rolled Bagels',
+                price: 2.00,
+                description: '"Its the New York Water!" Available with Plain, Poppy, or Everything varieties.',
+                customizable: true,
+                type: 'hand_bagel'
+            },
+            {
+                id: 'breakfast-quesadilla',
+                category: 'specials',
+                name: 'Breakfast Quesadilla',
+                price: 5.00,
+                description: 'Prepared with eggs and cheese in a warm tortilla.',
+                customizable: true,
+                type: 'quesadilla'
+            },
+            {
+                id: 'zaatar-pita',
+                category: 'specials',
+                name: 'Za\'atar Pita',
+                price: 3.00,
+                description: 'A Middle-Eastern Classic flatbread served warm with olive oil & a fresh, tangy seasoning.',
+                customizable: false
+            }
+        ];
+
+        // Drink options strictly from PDF + Dragonfruit syrup addition
+        const MILK_OPTIONS = ['None', 'Whole Milk', 'Oat Milk', 'Half & Half'];
+        const FLAVOR_OPTIONS = ['None', 'Dragonfruit', 'Salted Caramel', 'Vanilla', 'Cinnamon', 'SF Caramel', 'SF Vanilla'];
+
+        // App State Variables
+        let currentCart = [];
+        let activeModalItem = null;
+        let activeModalQty = 1;
+        let ordersList = [];
+
+        // Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            loadOrdersFromStorage();
+            renderMenuItems();
+            renderCart();
+            updatePendingBadge();
+
+            // Listen for cross-tab storage sync
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'pastry_parlor_orders') {
+                    loadOrdersFromStorage();
+                    renderKitchenOrders();
+                    updatePendingBadge();
+                }
+            });
+        });
+
+        function loadOrdersFromStorage() {
+            const stored = localStorage.getItem('pastry_parlor_orders');
+            if (stored) {
+                try {
+                    ordersList = JSON.parse(stored);
+                } catch (err) {
+                    ordersList = [];
+                }
+            } else {
+                ordersList = [];
+            }
+        }
+
+        function saveOrdersToStorage() {
+            localStorage.setItem('pastry_parlor_orders', JSON.stringify(ordersList));
+            updatePendingBadge();
+        }
+
+        function updatePendingBadge() {
+                        <!-- Customer Details Form -->
+                        <form id="order-form" onsubmit="handleOrderSubmit(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-parlor-dark/80 mb-1">
+                                    Customer Name *
+                                </label>
+                                <input type="text" id="cust-name" required placeholder="e.g. Alex Johnson" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-parlor-accent focus:border-parlor-accent outline-none text-sm transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-parlor-dark/80 mb-1">
+                                    Room Number *
+                                </label>
+                                <input type="text" id="cust-room" required placeholder="e.g. Room 204" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-parlor-accent focus:border-parlor-accent outline-none text-sm transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-parlor-dark/80 mb-1">
+                                    Time Requested *
+                                </label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="flex items-center justify-center p-2.5 border border-gray-300 rounded-xl cursor-pointer hover:bg-parlor-cream transition text-sm font-medium has-[:checked]:bg-parlor-accent has-[:checked]:text-white has-[:checked]:border-parlor-accent">
+                                        <input type="radio" name="cust-period" value="1st Period" required class="sr-only">
+                                        <span>1st Period</span>
+                                    </label>
+                                    <label class="flex items-center justify-center p-2.5 border border-gray-300 rounded-xl cursor-pointer hover:bg-parlor-cream transition text-sm font-medium has-[:checked]:bg-parlor-accent has-[:checked]:text-white has-[:checked]:border-parlor-accent">
+                                        <input type="radio" name="cust-period" value="2nd Period" required class="sr-only">
+                                        <span>2nd Period</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-parlor-dark/80 mb-1">
+                                    Order Notes / Special Instructions
+                                </label>
+                                <textarea id="cust-notes" rows="2" placeholder="e.g. Leave outside room door..." 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-parlor-accent focus:border-parlor-accent outline-none text-sm transition resize-none"></textarea>
+                            </div>
+
+                            <button type="submit" 
+                                class="w-full py-3 bg-parlor-accent hover:bg-parlor-brown text-white font-bold rounded-xl shadow-md transition duration-200 flex items-center justify-center space-x-2 text-base">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>Submit Order to Cafe</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+                            <p class="text-xs text-gray-600 mb-4 leading-relaxed">${item.description}</p>
+                        </div>
+                        <button onclick="openCustomizationModal('${item.id}')" 
+                            class="w-full py-2 bg-parlor-cream hover:bg-parlor-gold/20 text-parlor-brown font-semibold text-xs rounded-xl border border-parlor-gold/40 transition flex items-center justify-center space-x-1">
+                            <i class="fa-solid ${item.customizable ? 'fa-sliders' : 'fa-plus'} text-xs"></i>
+                            <span>${item.customizable ? 'Customize & Add' : 'Add to Order'}</span>
+                        </button>
+                    </div>
+                `;
+
+                if (item.category === 'drinks') {
+                    drinksContainer.innerHTML += cardHtml;
+                } else {
+                    specialsContainer.innerHTML += cardHtml;
+                }
+            });
+        }
+
+        function openCustomizationModal(itemId) {
+            const item = MENU_DATA.find(i => i.id === itemId);
+            if (!item) return;
+
+            activeModalItem = item;
+            activeModalQty = 1;
+
+            document.getElementById('modal-item-name').innerText = item.name;
+            document.getElementById('modal-item-price').innerText = `$${item.price.toFixed(2)}`;
+            document.getElementById('modal-qty').innerText = '1';
+
+            const body = document.getElementById('modal-options-body');
+            body.innerHTML = '';
+
+            if (!item.customizable) {
+                body.innerHTML = `<p class="text-gray-500 italic">Standard recipe. No customization options required for this item.</p>`;
+            } else if (item.type === 'custom_drink') {
+                body.innerHTML = `
+                    <div>
+                        <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Milk Choice:</label>
+                        <select id="modal-milk" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-parlor-accent">
+                            ${MILK_OPTIONS.map(m => `<option value="${m}">${m}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Flavor Syrup Choice:</label>
+                        <select id="modal-flavor" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-parlor-accent">
+                            ${FLAVOR_OPTIONS.map(f => `<option value="${f}">${f}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            } else if (item.type === 'matcha_latte') {
+                body.innerHTML = `
+                    <div>
+                        <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Sweetness Option:</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                                <input type="radio" name="modal-matcha-sweet" value="Sweetened" checked class="text-parlor-accent focus:ring-parlor-accent">
+                                <span>Sweetened</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                                <input type="radio" name="modal-matcha-sweet" value="Unsweetened" class="text-parlor-accent focus:ring-parlor-accent">
+                                <span>Unsweetened</span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            } else if (item.type === 'beg_bagel') {
+                body.innerHTML = `
+                    <div>
+                        <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Bagel Variety:</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                                <input type="radio" name="modal-bagel-var" value="Plain Bagel" checked class="text-parlor-accent focus:ring-parlor-accent">
+                                <span>Plain Bagel</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                                <input type="radio" name="modal-bagel-var" value="Poppy Bagel" class="text-parlor-accent focus:ring-parlor-accent">
+                                <span>Poppy Bagel</span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            } else if (item.type === 'avocado_toast') {
+                body.innerHTML = `
+                    <div class="bg-parlor-cream p-3 rounded-xl border border-parlor-gold/30">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="font-medium text-parlor-dark">Add Bacon</span>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs text-parlor-accent font-bold">+$1.00</span>
+                                <input type="checkbox" id="modal-add-bacon" class="w-4 h-4 text-parlor-accent focus:ring-parlor-accent rounded">
+                            </div>
+                        </label>
+                    </div>
+                `;
+            } else if (item.type === 'hand_bagel') {
+                body.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Bagel Variety:</label>
+                            <select id="modal-hand-var" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-parlor-accent">
+                                <option value="Plain">Plain</option>
+                                <option value="Poppy">Poppy</option>
+                                <option value="Everything">Everything</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Add-ons:</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center justify-between cursor-pointer bg-white p-2 rounded-xl border border-gray-200">
+                                    <span>Cream Cheese</span>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs text-parlor-accent font-bold">+$1.00</span>
+                                        <input type="checkbox" id="modal-cc" class="w-4 h-4 text-parlor-accent rounded">
+                                    </div>
+                                </label>
+                                <label class="flex items-center justify-between cursor-pointer bg-white p-2 rounded-xl border border-gray-200">
+                                    <span>Butter</span>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs text-parlor-accent font-bold">+$1.00</span>
+                                        <input type="checkbox" id="modal-butter" class="w-4 h-4 text-parlor-accent rounded">
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (item.type === 'quesadilla') {
+                body.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Bacon Preference:</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                                    <input type="radio" name="modal-quesa-bacon" value="With Bacon" checked class="text-parlor-accent focus:ring-parlor-accent">
+                                    <span>With Bacon</span>
+                                </label>
+                                <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                                    <input type="radio" name="modal-quesa-bacon" value="No Bacon" class="text-parlor-accent focus:ring-parlor-accent">
+                                    <span>No Bacon</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="bg-parlor-cream p-3 rounded-xl border border-parlor-gold/30">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <span class="font-medium text-parlor-dark">Hot Sauce Request</span>
+                                <input type="checkbox" id="modal-hotsauce" class="w-4 h-4 text-parlor-accent rounded">
+                            </label>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('item-modal').classList.remove('hidden');
+        }
+
+        function confirmAddToCart() {
+            if (!activeModalItem) return;
+
+            let unitPrice = activeModalItem.price;
+            let options = [];
+
+            if (activeModalItem.type === 'custom_drink') {
+                const milk = document.getElementById('modal-milk').value;
+                const flavor = document.getElementById('modal-flavor').value;
+                if (milk !== 'None') options.push(`Milk: ${milk}`);
+                if (flavor !== 'None') options.push(`Flavor: ${flavor}`);
+            } else if (activeModalItem.type === 'matcha_latte') {
+                const sweetness = document.querySelector('input[name="modal-matcha-sweet"]:checked').value;
+                options.push(sweetness);
+            } else if (activeModalItem.type === 'beg_bagel') {
+                const bagelVar = document.querySelector('input[name="modal-bagel-var"]:checked').value;
+                options.push(bagelVar);
+            } else if (activeModalItem.type === 'avocado_toast') {
+                const addBacon = document.getElementById('modal-add-bacon').checked;
+                if (addBacon) {
+                    unitPrice += 1.00;
+                    options.push('Add Bacon (+$1.00)');
+                }
+            } else if (activeModalItem.type === 'hand_bagel') {
+                const bagelVar = document.getElementById('modal-hand-var').value;
+                options.push(`Variety: ${bagelVar}`);
+                
+                const cc = document.getElementById('modal-cc').checked;
+                const butter = document.getElementById('modal-butter').checked;
+
+                if (cc) {
+                    unitPrice += 1.00;
+                    options.push('Cream Cheese (+$1.00)');
+                }
+                if (butter) {
+                    unitPrice += 1.00;
+                    options.push('Butter (+$1.00)');
+                }
+            } else if (activeModalItem.type === 'quesadilla') {
+                const baconPref = document.querySelector('input[name="modal-quesa-bacon"]:checked').value;
+                options.push(baconPref);
+
+                const hotsauce = document.getElementById('modal-hotsauce').checked;
+                if (hotsauce) {
+                    options.push('Hot Sauce Requested');
+                }
+            }
+
+            const cartEntry = {
+                id: Date.now() + Math.random(),
+                name: activeModalItem.name,
+                unitPrice: unitPrice,
+                qty: activeModalQty,
+                options: options
+            };
+
+            currentCart.push(cartEntry);
+            renderCart();
+            closeModal();
+        }
+
+        function renderCart() {
+            const cartContainer = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+
+            if (currentCart.length === 0) {
+                cartContainer.innerHTML = `
+                    <div class="text-center py-6 text-gray-400">
+                        <i class="fa-solid fa-basket-shopping text-3xl mb-2"></i>
+                        <p class="text-xs">Your cart is currently empty</p>
+                    </div>
+                `;
+                cartTotal.innerText = '$0.00';
+                return;
+            }
+
+            let total = 0;
+            cartContainer.innerHTML = '';
+
+            currentCart.forEach((item, index) => {
+                const itemTotal = item.unitPrice * item.qty;
+                total += itemTotal;
+
+                cartContainer.innerHTML += `
+                    <div class="flex items-start justify-between bg-white p-3 rounded-xl border border-gray-200 text-xs shadow-sm">
+                        <div class="flex-grow pr-2">
+                            <div class="font-bold text-parlor-dark">${item.name} (x${item.qty})</div>
+                            ${item.options.length > 0 ? `<div class="text-[11px] text-gray-500 mt-0.5">${item.options.join(', ')}</div>` : ''}
+                            <div class="text-parlor-accent font-semibold mt-1">$${itemTotal.toFixed(2)}</div>
+                        </div>
+                        <button onclick="removeCartItem(${index})" class="text-red-400 hover:text-red-600 p-1">
+                            <i class="fa-solid fa-xmark text-sm"></i>
+                        </button>
+                    </div>
+                `;
+            });
+
+            cartTotal.innerText = `$${total.toFixed(2)}`;
+        }
+
+        function removeCartItem(index) {
+            currentCart.splice(index, 1);
+            renderCart();
+        }
+
+        function clearCart() {
+            currentCart = [];
+            renderCart();
+        }
+
+        function handleOrderSubmit(event) {
+            event.preventDefault();
+
+            if (currentCart.length === 0) {
+                alert('Please add at least one item to your cart before submitting!');
+                return;
+            }
+
+            const custName = document.getElementById('cust-name').value.trim();
+            const custRoom = document.getElementById('cust-room').value.trim();
+            const periodRadio = document.querySelector('input[name="cust-period"]:checked');
+            const custNotes = document.getElementById('cust-notes').value.trim();
+
+            if (!custName || !custRoom || !periodRadio) {
+                alert('Please fill out all required customer information fields.');
+                return;
+            }
+
+            const totalCalc = currentCart.reduce((sum, item) => sum + (item.unitPrice * item.qty), 0);
+
+            const newOrder = {
+                orderId: 'PP-' + Math.floor(1000 + Math.random() * 9000),
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                customerName: custName,
+                roomNumber: custRoom,
+                timeRequested: periodRadio.value,
+                notes: custNotes,
+                items: JSON.parse(JSON.stringify(currentCart)),
+                total: totalCalc,
+                status: 'Pending'
+            };
+
+            ordersList.unshift(newOrder);
+            saveOrdersToStorage();
+
+            // Reset form & cart
+            currentCart = [];
+            renderCart();
+            document.getElementById('order-form').reset();
+
+            // Show confirmation modal
+            document.getElementById('success-modal').classList.remove('hidden');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').classList.add('hidden');
+        }
+
+        function renderKitchenOrders() {
+            const grid = document.getElementById('kitchen-orders-grid');
+            const filterPeriod = document.getElementById('filter-period').value;
+            const filterStatus = document.getElementById('filter-status').value;
+
+            let filtered = ordersList.filter(o => {
+                const matchPeriod = (filterPeriod === 'ALL' || o.timeRequested === filterPeriod);
+                const matchStatus = (filterStatus === 'ALL' || o.status === filterStatus);
+                return matchPeriod && matchStatus;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 bg-parlor-card rounded-2xl border border-gray-200">
+                        <i class="fa-solid fa-clipboard-check text-4xl text-gray-300 mb-3"></i>
+                        <h4 class="font-serif-title text-xl font-bold text-gray-600">No Orders Found</h4>
+                        <p class="text-xs text-gray-400 mt-1">There are currently no customer orders matching your filter criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = '';
+
+            filtered.forEach(order => {
+                let statusBg = 'bg-yellow-100 text-yellow-800 border-yellow-300';
+                if (order.status === 'In Progress') statusBg = 'bg-blue-100 text-blue-800 border-blue-300';
+                if (order.status === 'Fulfilled') statusBg = 'bg-green-100 text-green-800 border-green-300';
+                if (order.status === 'Cancelled') statusBg = 'bg-gray-100 text-gray-600 border-gray-300';
+
+                grid.innerHTML += `
+                    <div class="bg-parlor-card rounded-2xl p-5 shadow-md border border-parlor-gold/30 flex flex-col justify-between relative">
+                        <div>
+                            <!-- Header Info -->
+                            <div class="flex justify-between items-start mb-3 pb-3 border-b border-gray-200">
+                                <div>
+                                    <span class="text-xs font-bold text-parlor-accent">${order.orderId}</span>
+                                    <h4 class="font-bold text-lg text-parlor-dark leading-tight">${order.customerName}</h4>
+                                    <p class="text-xs text-gray-500"><i class="fa-solid fa-door-open text-parlor-gold mr-1"></i>${order.roomNumber}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full border ${statusBg} mb-1">
+                                        ${order.status}
+                                    </span>
+                                    <div class="text-[11px] font-semibold text-parlor-brown">${order.timeRequested}</div>
+                                </div>
+                            </div>
+
+                            <!-- Items List -->
+                            <div class="space-y-2 mb-3">
+                                ${order.items.map(item => `
+                                    <div class="bg-parlor-cream p-2.5 rounded-xl text-xs border border-parlor-gold/20">
+                                        <div class="flex justify-between font-bold text-parlor-dark">
+                                            <span>${item.qty}x ${item.name}</span>
+                                            <span>$${(item.unitPrice * item.qty).toFixed(2)}</span>
+                                        </div>
+                                        ${item.options.length > 0 ? `
+                                            <div class="text-[11px] text-parlor-brown font-medium mt-1">
+                                                • ${item.options.join('<br>• ')}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+
+                            ${order.notes ? `
+                                <div class="mb-4 p-2.5 bg-yellow-50 border border-yellow-200 rounded-xl text-xs text-yellow-900 italic">
+                                    <span class="font-bold non-italic not-italic block text-[10px] text-yellow-700 uppercase">Note:</span>
+                                    "${order.notes}"
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Card Footer Controls -->
+                        <div>
+                            <div class="flex justify-between items-center text-xs font-bold text-parlor-dark pt-2 mb-3 border-t border-gray-100">
+                                <span>Order Total:</span>
+                                <span class="text-parlor-accent text-sm">$${order.total.toFixed(2)}</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <select onchange="updateOrderStatus('${order.orderId}', this.value)" 
+                                    class="col-span-2 px-3 py-1.5 bg-white border border-gray-300 rounded-xl text-xs font-bold text-parlor-dark focus:ring-2 focus:ring-parlor-accent outline-none">
+                                    <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Status: Pending</option>
+                                    <option value="In Progress" ${order.status === 'In Progress' ? 'selected' : ''}>Status: In Progress</option>
+                                    <option value="Fulfilled" ${order.status === 'Fulfilled' ? 'selected' : ''}>Status: Fulfilled</option>
+                                    <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Status: Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            const idx = ordersList.findIndex(o => o.orderId === orderId);
+            if (idx !== -1) {
+                ordersList[idx].status = newStatus;
+                saveOrdersToStorage();
+                renderKitchenOrders();
+            }
+        }
+
+        function clearCompletedOrders() {
+            if (confirm('Are you sure you want to remove all fulfilled/completed orders from the dashboard?')) {
+                ordersList = ordersList.filter(o => o.status !== 'Fulfilled' && o.status !== 'Cancelled');
+                saveOrdersToStorage();
+                renderKitchenOrders();
+            }
+        }
+    </script>
+</body>
+</html>
