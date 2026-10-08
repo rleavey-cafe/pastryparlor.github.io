@@ -534,16 +534,15 @@
             if (!item.customizable) {
     body.innerHTML = `<p class="text-gray-500 italic">Standard recipe. No customization options required for this item.</p>`;
 } else if (item.type === 'iced_tea') {
-    // NEW: Iced Tea specific options (Unsweetened vs. Dragonfruit Syrup, No Milk)
-    body.innerHTML = `
-        <div>
-            <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Flavor / Sweetness Choice:</label>
-            <select id="modal-tea-flavor" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-parlor-accent">
-                <option value="Unsweetened">Unsweetened</option>
-                <option value="Dragonfruit Syrup">Dragonfruit Syrup</option>
-            </select>
-        </div>
-    `;
+                body.innerHTML = `
+                    <div>
+                        <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Flavor / Sweetness Choice:</label>
+                        <select id="modal-tea-flavor" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-parlor-accent">
+                            <option value="Unsweetened">Unsweetened</option>
+                            <option value="Dragonfruit Syrup">Dragonfruit Syrup</option>
+                        </select>
+                    </div>
+                `;
 } else if (item.type === 'custom_drink') {
     body.innerHTML = `
         <div>
