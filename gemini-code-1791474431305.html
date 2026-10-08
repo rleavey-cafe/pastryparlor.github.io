@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastry Parlor - Order Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            DEFAULT: '#0F172A',
+                            dark: '#070A12',
+                            light: '#1E293B',
+                            accent: '#2563EB'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts for Script Branding -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .font-script {
+            font-family: 'Great Vibes', cursive;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-navy text-white shadow-md sticky top-0 z-40 border-b border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-cookie-bite text-3xl text-blue-400"></i>
+                <div>
+                    <h1 class="text-3xl font-script tracking-wide text-white leading-none">Pastry Parlor</h1>
+                    <span class="text-[10px] uppercase tracking-widest text-blue-300 block">Est. 2021</span>
+                </div>
+            </div>
+            <button onclick="toggleCartDrawer()" class="relative bg-navy-light border border-slate-700 px-4 py-2 rounded-xl flex items-center space-x-2 hover:bg-slate-700 transition">
+                <i class="fa-solid fa-shopping-bag text-blue-400"></i>
+                <span class="font-semibold text-sm">Cart</span>
+                <span id="cart-badge" class="bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Menu Section -->
+        <section class="lg:col-span-2">
+            <h2 class="text-2xl font-bold text-navy mb-6 border-b border-gray-200 pb-3">Our Menu</h2>
+            <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Dynamically Populated -->
+            </div>
+        </section>
+
+        <!-- Cart Sidebar (Desktop View) -->
+        <aside class="hidden lg:block bg-white border border-gray-200 rounded-2xl p-6 shadow-sm h-fit sticky top-24">
+            <h2 class="text-lg font-bold text-navy mb-4 flex justify-between items-center border-b border-gray-100 pb-3">
+                <span>Your Order</span>
+                <i class="fa-solid fa-receipt text-slate-400"></i>
+            </h2>
+
+            <div id="desktop-cart-items" class="space-y-3 max-h-64 overflow-y-auto pr-1">
+                <!-- Cart Items -->
+            </div>
+
+            <div id="desktop-cart-checkout-form" class="mt-4 pt-4 border-t border-gray-100">
+                <!-- Dynamic Checkout Inputs & Summary -->
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- Customization Modal -->
+    <div id="item-modal" class="fixed inset-0 bg-navy-dark/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100">
+            <div class="bg-navy text-white p-5 flex justify-between items-start">
+                <div>
+                    <h3 id="modal-item-name" class="font-bold text-lg">Item Name</h3>
+                    <p id="modal-item-price" class="text-blue-300 font-semibold text-sm">$0.00</p>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div id="modal-options-body" class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+                <!-- Dynamic Controls -->
+            </div>
+
+            <div class="bg-gray-50 border-t border-gray-100 p-4 flex items-center justify-between">
+                <div class="flex items-center space-x-3 bg-white border border-gray-300 rounded-xl px-3 py-1.5">
+                    <button onclick="adjustModalQty(-1)" class="text-navy hover:text-blue-600 font-bold px-1 text-lg">-</button>
+                    <span id="modal-qty" class="font-bold text-slate-800 min-w-[1.25rem] text-center">1</span>
+                    <button onclick="adjustModalQty(1)" class="text-navy hover:text-blue-600 font-bold px-1 text-lg">+</button>
+                </div>
+
+                <button onclick="confirmAddToCart()" class="bg-navy hover:bg-navy-light text-white font-semibold px-6 py-2.5 rounded-xl transition shadow-md">
+                    Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Cart Drawer -->
+    <div id="cart-drawer" class="fixed inset-0 bg-navy-dark/70 z-50 hidden flex justify-end">
+        <div class="bg-white w-full max-w-md h-full flex flex-col justify-between p-6 shadow-2xl overflow-y-auto">
+            <div>
+                <div class="flex justify-between items-center border-b border-gray-200 pb-4 mb-4">
+                    <h2 class="text-lg font-bold text-navy">Your Order</h2>
+                    <button onclick="toggleCartDrawer()" class="text-slate-500 hover:text-navy">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <div id="mobile-cart-items" class="space-y-3">
+                    <!-- Mobile Cart Items -->
+                </div>
+            </div>
+            <div id="mobile-cart-checkout-form" class="border-t border-gray-200 pt-4 space-y-3 mt-4">
+                <!-- Mobile Checkout Form -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PDF Menu Items
+        const MENU_DATA = [
+            { id: '1', name: 'Cold Brew', price: 3.00, customizable: true, type: 'drink', desc: 'Signature iced cold brew coffee.' },
+            { id: '2', name: 'Iced Green Tea', price: 3.00, customizable: true, type: 'drink', desc: 'Refreshing brewed green tea.' },
+            { id: '3', name: 'NEW Iced Matcha Latte', price: 4.00, customizable: false, type: 'standard', desc: 'Prepared fresh to order using organic matcha powder & whole milk.' },
+            { id: '4', name: 'Bacon, Egg, & Cheese Bagel', price: 6.00, customizable: true, type: 'bec_bagel', desc: 'An unmistakable New York Classic, prepped by our high school students each day.' },
+            { id: '5', name: 'Avocado Toast', price: 3.00, customizable: true, type: 'avocado_toast', desc: 'Avocado mash on sourdough with everything seasoning.' },
+            { id: '6', name: 'Hand Rolled Bagels', price: 2.00, customizable: true, type: 'hand_bagel', desc: 'Fresh local bagels. "Its the New York Water!"' },
+            { id: '7', name: 'Breakfast Quesadilla', price: 5.00, customizable: true, type: 'quesadilla', desc: 'Prepared with Bacon bits, eggs, and cheese.' },
+            { id: '8', name: 'Zavatar Pita', price: 3.00, customizable: false, type: 'standard', desc: 'A Middle-Eastern Classic flatbread served warm with olive oil & a fresh, tangy seasoning.' }
+        ];
+
+        const MILK_OPTIONS = ['Whole Milk', 'Oat Milk', 'Half & Half'];
+        const FLAVOR_OPTIONS = ['None', 'Salted Caramel', 'Vanilla', 'Cinnamon', 'SF Caramel', 'SF Vanilla'];
+
+        let cart = [];
+        let activeModalItem = null;
+        let activeModalQty = 1;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMenu();
+            updateCartUI();
+        });
+
+        function renderMenu() {
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = MENU_DATA.map(item => `
+                <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-navy text-base">${item.name}</h3>
+                            <span class="font-bold text-navy bg-slate-100 px-2.5 py-1 rounded-lg text-sm">$${item.price.toFixed(2)}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 leading-relaxed mb-4">${item.desc}</p>
+                    </div>
+                    <button onclick="openCustomizationModal('${item.id}')" class="w-full bg-navy hover:bg-navy-light text-white font-semibold py-2 rounded-xl text-sm transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                        <span>${item.customizable ? 'Customize & Add' : 'Add to Cart'}</span>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function openCustomizationModal(itemId) {
+            const item = MENU_DATA.find(i => i.id === itemId);
+            if (!item) return;
+
+            activeModalItem = item;
+            activeModalQty = 1;
+
+            document.getElementById('modal-item-name').innerText = item.name;
+            document.getElementById('modal-item-price').innerText = `$${item.price.toFixed(2)}`;
+            document.getElementById('modal-qty').innerText = '1';
+
+            const body = document.getElementById('modal-options-body');
+            body.innerHTML = '';
+
+            if (!item.customizable) {
+                body.innerHTML = `<p class="text-slate-500 text-sm italic">Standard recipe item. No additional customization required.</p>`;
+            } else if (item.type === 'drink') {
+                body.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block font-bold text-xs uppercase text-navy mb-2">Milk Choice</label>
+                            <select id="modal-milk" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-navy">
+                                ${MILK_OPTIONS.map(m => `<option value="${m}">${m}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-xs uppercase text-navy mb-2">Flavor Syrup Choice</label>
+                            <select id="modal-flavor" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-navy">
+                                ${FLAVOR_OPTIONS.map(f => `<option value="${f}">${f}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                `;
+            } else if (item.type === 'bec_bagel') {
+                body.innerHTML = `
+                    <div>
+                        <label class="block font-bold text-xs uppercase text-navy mb-2">Bagel Selection</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center space-x-2 text-sm cursor-pointer p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50">
+                                <input type="radio" name="modal-bagel-var" value="Plain Bagel" checked class="accent-navy">
+                                <span>Plain Bagel</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-sm cursor-pointer p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50">
+                                <input type="radio" name="modal-bagel-var" value="Poppy Bagel" class="accent-navy">
+                                <span>Poppy Bagel</span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            } else if (item.type === 'avocado_toast') {
+                body.innerHTML = `
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="font-semibold text-sm text-navy">Add Bacon</span>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs text-blue-600 font-bold">+$1.00</span>
+                                <input type="checkbox" id="modal-add-bacon" class="w-4 h-4 accent-navy rounded">
+                            </div>
+                        </label>
+                    </div>
+                `;
+            } else if (item.type === 'hand_bagel') {
+                body.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block font-bold text-xs uppercase text-navy mb-2">Bagel Variety</label>
+                            <select id="modal-hand-var" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-navy">
+                                <option value="Plain">Plain</option>
+                                <option value="Poppy">Poppy</option>
+                                <option value="Everything">Everything</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-xs uppercase text-navy mb-2">Spread Options</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center justify-between cursor-pointer p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50">
+                                    <span class="text-sm">Cream Cheese</span>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs text-blue-600 font-bold">+$1.00</span>
+                                        <input type="checkbox" id="modal-cc" class="w-4 h-4 accent-navy rounded">
+                                    </div>
+                                </label>
+                                <label class="flex items-center justify-between cursor-pointer p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50">
+                                    <span class="text-sm">Butter</span>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs text-blue-600 font-bold">+$1.00</span>
+                                        <input type="checkbox" id="modal-butter" class="w-4 h-4 accent-navy rounded">
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (item.type === 'quesadilla') {
+                body.innerHTML = `
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="font-semibold text-sm text-navy">Hot Sauce Side</span>
+                            <input type="checkbox" id="modal-hotsauce" class="w-4 h-4 accent-navy rounded">
+                        </label>
+                    </div>
+                `;
+            }
+
+            document.getElementById('item-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('item-modal').classList.add('hidden');
+            activeModalItem = null;
+        }
+
+        function adjustModalQty(delta) {
+            activeModalQty += delta;
+            if (activeModalQty < 1) activeModalQty = 1;
+            document.getElementById('modal-qty').innerText = activeModalQty;
+        }
+
+        function confirmAddToCart() {
+            if (!activeModalItem) return;
+
+            const item = activeModalItem;
+            let calculatedPrice = item.price;
+            let opts = [];
+
+            if (item.type === 'drink') {
+                const milk = document.getElementById('modal-milk')?.value;
+                const flavor = document.getElementById('modal-flavor')?.value;
+                if (milk) opts.push(`Milk: ${milk}`);
+                if (flavor && flavor !== 'None') opts.push(`Flavor: ${flavor}`);
+            } else if (item.type === 'bec_bagel') {
+                const bagelVar = document.querySelector('input[name="modal-bagel-var"]:checked')?.value;
+                if (bagelVar) opts.push(bagelVar);
+            } else if (item.type === 'avocado_toast') {
+                const addBacon = document.getElementById('modal-add-bacon')?.checked;
+                if (addBacon) {
+                    opts.push('Add Bacon (+$1.00)');
+                    calculatedPrice += 1.00;
+                }
+            } else if (item.type === 'hand_bagel') {
+                const variety = document.getElementById('modal-hand-var')?.value;
+                const cc = document.getElementById('modal-cc')?.checked;
+                const butter = document.getElementById('modal-butter')?.checked;
+                if (variety) opts.push(`Variety: ${variety}`);
+                if (cc) {
+                    opts.push('Cream Cheese (+$1.00)');
+                    calculatedPrice += 1.00;
+                }
+                if (butter) {
+                    opts.push('Butter (+$1.00)');
+                    calculatedPrice += 1.00;
+                }
+            } else if (item.type === 'quesadilla') {
+                const hotSauce = document.getElementById('modal-hotsauce')?.checked;
+                if (hotSauce) opts.push('Hot Sauce Requested');
+            }
+
+            const optionsString = opts.length > 0 ? opts.join(', ') : 'Standard Recipe';
+
+            addToCart({
+                id: item.id,
+                name: item.name,
+                unitPrice: calculatedPrice,
+                qty: activeModalQty,
+                options: optionsString
+            });
+
+            closeModal();
+        }
+
+        function addToCart(newItem) {
+            const existingIndex = cart.findIndex(
+                ci => ci.id === newItem.id && ci.options === newItem.options
+            );
+
+            if (existingIndex > -1) {
+                cart[existingIndex].qty += newItem.qty;
+            } else {
+                cart.push({
+                    cartItemId: Date.now().toString() + Math.random().toString(36).substring(2, 5),
+                    id: newItem.id,
+                    name: newItem.name,
+                    unitPrice: newItem.unitPrice,
+                    qty: newItem.qty,
+                    options: newItem.options
+                });
+            }
+
+            updateCartUI();
+        }
+
+        function updateCartQty(cartItemId, delta) {
+            const index = cart.findIndex(item => item.cartItemId === cartItemId);
+            if (index > -1) {
+                cart[index].qty += delta;
+                if (cart[index].qty <= 0) {
+                    cart.splice(index, 1);
+                }
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const totalItemCount = cart.reduce((sum, item) => sum + item.qty, 0);
+            const subtotal = cart.reduce((sum, item) => sum + (item.unitPrice * item.qty), 0);
+            document.getElementById('cart-badge').innerText = totalItemCount;
+
+            const renderCartList = () => {
+                if (cart.length === 0) {
+                    return `<p class="text-slate-400 text-sm text-center py-6">Your cart is empty.</p>`;
+                }
+                return cart.map(item => `
+                    <div class="flex items-start justify-between bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                        <div class="pr-2">
+                            <h4 class="font-bold text-navy text-xs">${item.name}</h4>
+                            <p class="text-[11px] text-slate-500 font-medium leading-tight my-0.5">${item.options}</p>
+                            <span class="text-xs text-blue-600 font-bold">$${(item.unitPrice * item.qty).toFixed(2)}</span>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-white border border-gray-300 rounded-lg px-2 py-0.5">
+                            <button onclick="updateCartQty('${item.cartItemId}', -1)" class="text-slate-600 hover:text-navy text-xs font-bold">-</button>
+                            <span class="text-xs font-bold text-navy min-w-[0.85rem] text-center">${item.qty}</span>
+                            <button onclick="updateCartQty('${item.cartItemId}', 1)" class="text-slate-600 hover:text-navy text-xs font-bold">+</button>
+                        </div>
+                    </div>
+                `).join('');
+            };
+
+            const renderCheckoutForm = (prefix) => `
+                <form onsubmit="handlePlaceOrder(event)" class="space-y-3">
+                    <div>
+                        <label class="block font-bold text-[11px] uppercase text-navy mb-1">Customer Name *</label>
+                        <input type="text" id="${prefix}-cust-name" required placeholder="Full Name" class="w-full p-2 bg-gray-50 border border-gray-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-navy">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-[11px] uppercase text-navy mb-1">Room Number *</label>
+                        <input type="text" id="${prefix}-room-num" required placeholder="Room #" class="w-full p-2 bg-gray-50 border border-gray-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-navy">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-[11px] uppercase text-navy mb-1">Delivery Time *</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center justify-center p-2 rounded-xl border border-gray-200 bg-gray-50 text-xs cursor-pointer hover:bg-slate-100">
+                                <input type="radio" name="${prefix}-period" value="Period 1" checked class="accent-navy mr-1.5">
+                                <span>Period 1</span>
+                            </label>
+                            <label class="flex items-center justify-center p-2 rounded-xl border border-gray-200 bg-gray-50 text-xs cursor-pointer hover:bg-slate-100">
+                                <input type="radio" name="${prefix}-period" value="Period 2" class="accent-navy mr-1.5">
+                                <span>Period 2</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-[11px] uppercase text-navy mb-1">Order Notes / Instructions</label>
+                        <textarea id="${prefix}-notes" rows="2" placeholder="Special requests..." class="w-full p-2 bg-gray-50 border border-gray-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-navy"></textarea>
+                    </div>
+                    <div class="flex justify-between items-center text-sm font-semibold text-navy pt-2">
+                        <span>Total</span>
+                        <span class="text-base font-bold text-blue-600">$${subtotal.toFixed(2)}</span>
+                    </div>
+                    <button type="submit" ${cart.length === 0 ? 'disabled' : ''} class="w-full bg-navy hover:bg-navy-light text-white font-bold py-2.5 rounded-xl transition shadow disabled:opacity-50 disabled:cursor-not-allowed">
+                        Place Order
+                    </button>
+                </form>
+            `;
+
+            document.getElementById('desktop-cart-items').innerHTML = renderCartList();
+            document.getElementById('desktop-cart-checkout-form').innerHTML = renderCheckoutForm('dt');
+
+            document.getElementById('mobile-cart-items').innerHTML = renderCartList();
+            document.getElementById('mobile-cart-checkout-form').innerHTML = renderCheckoutForm('mb');
+        }
+
+        function handlePlaceOrder(event) {
+            event.preventDefault();
+            if (cart.length === 0) return;
+
+            const isMobile = window.innerWidth < 1024;
+            const prefix = isMobile ? 'mb' : 'dt';
+
+            const name = document.getElementById(`${prefix}-cust-name`).value;
+            const room = document.getElementById(`${prefix}-room-num`).value;
+            const period = document.querySelector(`input[name="${prefix}-period"]:checked`).value;
+            const notes = document.getElementById(`${prefix}-notes`).value;
+
+            alert(`Thank you ${name}!\nYour order has been placed for ${period} delivery to Room ${room}.\n${notes ? 'Notes: ' + notes : ''}`);
+
+            cart = [];
+            updateCartUI();
+            if (isMobile) toggleCartDrawer();
+        }
+
+        function toggleCartDrawer() {
+            const drawer = document.getElementById('cart-drawer');
+            drawer.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>
