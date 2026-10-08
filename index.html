@@ -344,16 +344,7 @@
                 price: 3.00,
                 description: 'Classic freshly brewed ice cold tea.',
                 customizable: true,
-                type: 'custom_drink'
-            },
-            {
-                id: 'iced-green-tea',
-                category: 'drinks',
-                name: 'Iced Green Tea',
-                price: 3.00,
-                description: 'Light and crisp chilled green tea.',
-                customizable: true,
-                type: 'custom_drink'
+                type: 'iced_tea'
             },
             {
                 id: 'iced-matcha-latte',
@@ -371,7 +362,7 @@
                 name: 'Bacon, Egg, & Cheese Bagel',
                 price: 6.00,
                 description: 'An unmistakable New York Classic, prepped by our high school students each day.',
-                customizable: true,
+                customizable: false,
                 type: 'beg_bagel'
             },
             {
@@ -413,7 +404,7 @@
 
         // Drink options strictly from PDF
         const MILK_OPTIONS = ['None', 'Whole Milk', 'Oat Milk', 'Half & Half'];
-        const FLAVOR_OPTIONS = ['None', 'Salted Caramel', 'Vanilla', 'Cinnamon', 'SF Caramel', 'SF Vanilla'];
+        const FLAVOR_OPTIONS = ['None', 'Salted Caramel', 'Vanilla', 'Cinnamon', 'SF Caramel', 'SF Vanilla', 'Dragonfruit'];
 
         // App State Variables
         let currentCart = [];
@@ -541,92 +532,103 @@
             body.innerHTML = '';
 
             if (!item.customizable) {
-                body.innerHTML = `<p class="text-gray-500 italic">Standard recipe. No customization options required for this item.</p>`;
-            } else if (item.type === 'custom_drink') {
-                body.innerHTML = `
-                    <div>
-                        <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Milk Choice:</label>
-                        <select id="modal-milk" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-parlor-accent">
-                            ${MILK_OPTIONS.map(m => `<option value="${m}">${m}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Flavor Syrup Choice:</label>
-                        <select id="modal-flavor" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-parlor-accent">
-                            ${FLAVOR_OPTIONS.map(f => `<option value="${f}">${f}</option>`).join('')}
-                        </select>
-                    </div>
-                `;
-            } else if (item.type === 'beg_bagel') {
-                body.innerHTML = `
-                    <div>
-                        <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Bagel Variety:</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center space-x-2 text-sm cursor-pointer">
-                                <input type="radio" name="modal-bagel-var" value="Plain Bagel" checked class="text-parlor-accent focus:ring-parlor-accent">
-                                <span>Plain Bagel</span>
-                            </label>
-                            <label class="flex items-center space-x-2 text-sm cursor-pointer">
-                                <input type="radio" name="modal-bagel-var" value="Poppy Bagel" class="text-parlor-accent focus:ring-parlor-accent">
-                                <span>Poppy Bagel</span>
-                            </label>
+    body.innerHTML = `<p class="text-gray-500 italic">Standard recipe. No customization options required for this item.</p>`;
+} else if (item.type === 'iced_tea') {
+    // NEW: Iced Tea specific options (Unsweetened vs. Dragonfruit Syrup, No Milk)
+    body.innerHTML = `
+        <div>
+            <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Flavor / Sweetness Choice:</label>
+            <select id="modal-tea-flavor" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-parlor-accent">
+                <option value="Unsweetened">Unsweetened</option>
+                <option value="Dragonfruit Syrup">Dragonfruit Syrup</option>
+            </select>
+        </div>
+    `;
+} else if (item.type === 'custom_drink') {
+    body.innerHTML = `
+        <div>
+            <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Milk Choice:</label>
+            <select id="modal-milk" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-parlor-accent">
+                ${MILK_OPTIONS.map(m => `<option value="${m}">${m}</option>`).join('')}
+            </select>
+        </div>
+        <div>
+            <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Flavor Syrup Choice:</label>
+            <select id="modal-flavor" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-parlor-accent">
+                ${FLAVOR_OPTIONS.map(f => `<option value="${f}">${f}</option>`).join('')}
+            </select>
+        </div>
+    `;
+} else if (item.type === 'beg_bagel') {
+    body.innerHTML = `
+        <div>
+            <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Bagel Variety:</label>
+            <div class="space-y-2">
+                <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                    <input type="radio" name="modal-bagel-var" value="Plain Bagel" checked class="text-parlor-accent focus:ring-parlor-accent">
+                    <span>Plain Bagel</span>
+                </label>
+                <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                    <input type="radio" name="modal-bagel-var" value="Poppy Bagel" class="text-parlor-accent focus:ring-parlor-accent">
+                    <span>Poppy Bagel</span>
+                </label>
+            </div>
+        </div>
+    `;
+} else if (item.type === 'avocado_toast') {
+    body.innerHTML = `
+        <div class="bg-parlor-cream p-3 rounded-xl border border-parlor-gold/30">
+            <label class="flex items-center justify-between cursor-pointer">
+                <span class="font-medium text-parlor-dark">Add Bacon</span>
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-parlor-accent font-bold">+$1.00</span>
+                    <input type="checkbox" id="modal-add-bacon" class="w-4 h-4 text-parlor-accent focus:ring-parlor-accent rounded">
+                </div>
+            </label>
+        </div>
+    `;
+} else if (item.type === 'hand_bagel') {
+    body.innerHTML = `
+        <div class="space-y-4">
+            <div>
+                <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Bagel Variety:</label>
+                <select id="modal-hand-var" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-parlor-accent">
+                    <option value="Plain">Plain</option>
+                    <option value="Poppy">Poppy</option>
+                    <option value="Everything">Everything</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Add-ons:</label>
+                <div class="space-y-2">
+                    <label class="flex items-center justify-between cursor-pointer bg-white p-2 rounded-xl border border-gray-200">
+                        <span>Cream Cheese</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-parlor-accent font-bold">+$1.00</span>
+                            <input type="checkbox" id="modal-cc" class="w-4 h-4 text-parlor-accent rounded">
                         </div>
-                    </div>
-                `;
-            } else if (item.type === 'avocado_toast') {
-                body.innerHTML = `
-                    <div class="bg-parlor-cream p-3 rounded-xl border border-parlor-gold/30">
-                        <label class="flex items-center justify-between cursor-pointer">
-                            <span class="font-medium text-parlor-dark">Add Bacon</span>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-xs text-parlor-accent font-bold">+$1.00</span>
-                                <input type="checkbox" id="modal-add-bacon" class="w-4 h-4 text-parlor-accent focus:ring-parlor-accent rounded">
-                            </div>
-                        </label>
-                    </div>
-                `;
-            } else if (item.type === 'hand_bagel') {
-                body.innerHTML = `
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Bagel Variety:</label>
-                            <select id="modal-hand-var" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-parlor-accent">
-                                <option value="Plain">Plain</option>
-                                <option value="Poppy">Poppy</option>
-                                <option value="Everything">Everything</option>
-                            </select>
+                    </label>
+                    <label class="flex items-center justify-between cursor-pointer bg-white p-2 rounded-xl border border-gray-200">
+                        <span>Butter</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-parlor-accent font-bold">+$1.00</span>
+                            <input type="checkbox" id="modal-butter" class="w-4 h-4 text-parlor-accent rounded">
                         </div>
-                        <div>
-                            <label class="block font-bold text-xs uppercase text-parlor-dark mb-2">Add-ons:</label>
-                            <div class="space-y-2">
-                                <label class="flex items-center justify-between cursor-pointer bg-white p-2 rounded-xl border border-gray-200">
-                                    <span>Cream Cheese</span>
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-xs text-parlor-accent font-bold">+$1.00</span>
-                                        <input type="checkbox" id="modal-cc" class="w-4 h-4 text-parlor-accent rounded">
-                                    </div>
-                                </label>
-                                <label class="flex items-center justify-between cursor-pointer bg-white p-2 rounded-xl border border-gray-200">
-                                    <span>Butter</span>
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-xs text-parlor-accent font-bold">+$1.00</span>
-                                        <input type="checkbox" id="modal-butter" class="w-4 h-4 text-parlor-accent rounded">
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (item.type === 'quesadilla') {
-                body.innerHTML = `
-                    <div class="bg-parlor-cream p-3 rounded-xl border border-parlor-gold/30">
-                        <label class="flex items-center justify-between cursor-pointer">
-                            <span class="font-medium text-parlor-dark">Hot Sauce Request</span>
-                            <input type="checkbox" id="modal-hotsauce" class="w-4 h-4 text-parlor-accent rounded">
-                        </label>
-                    </div>
-                `;
-            }
+                    </label>
+                </div>
+            </div>
+        </div>
+    `;
+} else if (item.type === 'quesadilla') {
+    body.innerHTML = `
+        <div class="bg-parlor-cream p-3 rounded-xl border border-parlor-gold/30">
+            <label class="flex items-center justify-between cursor-pointer">
+                <span class="font-medium text-parlor-dark">Hot Sauce Request</span>
+                <input type="checkbox" id="modal-hotsauce" class="w-4 h-4 text-parlor-accent rounded">
+            </label>
+        </div>
+    `;
+}
 
             document.getElementById('item-modal').classList.remove('hidden');
         }
